@@ -1,0 +1,16 @@
+## Interface: 30300
+## Title: Aanye XP
+## Notes: Experience & Reputation plugin for any DataBroker display.
+## Author: Aanye
+## Version: 1.0
+## OptionalDeps: Ace3
+
+libs\LibStub\LibStub.lua
+libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceEvent-3.0\AceEvent-3.0.xml
+libs\AceLocale-3.0\AceLocale-3.0.xml
+libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
+
+Locales\enUS.lua
+
+Aanye_XP.lua
