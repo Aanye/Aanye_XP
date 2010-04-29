@@ -14,10 +14,9 @@ L["Current Experience:"] = true
 L["Rest:"] = true
 L["Remaining to Level:"] = true
 -- Tooltip: Reputation Mode
-L["Reputation Summary"] = true
+L["Reputation Summary:"] = true
 L["To track a faction reputation, select a faction from the"] = true
 L["Reputation window and check \34Show as Experience Bar\34."] = true
+L["Standing:"] = true
 L["Current Reputation:"] = true
 L["Remaining to X:"] = function(X) return "Remaining to "..X..":"; end
--- Byline, because I'm so full of myself
---L["By Aanye on Cenarius (US)"] = true
