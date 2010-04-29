@@ -2,7 +2,7 @@
 ## Title: Aanye XP
 ## Notes: Experience & Reputation plugin for any DataBroker display.
 ## Author: Aanye
-## Version: 1.0
+## Version: 1.1
 ## OptionalDeps: Ace3
 
 libs\LibStub\LibStub.lua
