@@ -20,7 +20,6 @@ function f:PLAYER_LOGIN()
 	current_xp,max_xp = UnitXP("player"), UnitXPMax("player"), GetTime()
 
 	self:RegisterEvent("PLAYER_XP_UPDATE")
-	self:RegisterEvent("PLAYER_LEVEL_UP")
 
 	self:SetFactionVars()
 
@@ -84,10 +83,6 @@ function f:PLAYER_XP_UPDATE()
 	self:SetBrokerText()
 end
 
-function f:PLAYER_LEVEL_UP()
-	total_xp = total_xp + max_xp
-end
-
 function f:UPDATE_FACTION()
 	local faction = GetWatchedFactionInfo()
 	if faction ~= rep_faction then self:SetFactionVars() end
@@ -128,7 +123,6 @@ function dataobj.SetTooltipContents()
 			GameTooltip:AddDoubleLine(L["Rest:"], string.format("%d%%", (GetXPExhaustion() or 0)/max_xp*100), nil,nil,nil, 1,1,1)
 			GameTooltip:AddDoubleLine(L["Current Experience:"], current_xp.."/"..max_xp, nil,nil,nil, 1,1,1)
 			GameTooltip:AddDoubleLine(L["Remaining to Level:"], max_xp-current_xp, nil,nil,nil, 1,1,1)
-			-- GameTooltip:AddLine((total_xp + current_xp).." experience gained this session", 1,1,1)
 		end
 	else
 		local name, standing, min, max, value = GetWatchedFactionInfo()
