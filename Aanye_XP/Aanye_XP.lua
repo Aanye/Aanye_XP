@@ -1,8 +1,8 @@
 -- Local variables --
 
-local start_time,track_exp
+local db
 local current_xp,max_xp
-local rep_faction,start_rep,current_rep
+local rep_faction,start_rep,current_rep,_
 local L = LibStub:GetLibrary( "AceLocale-3.0" ):GetLocale("Aanye_XP")
 
 local rgbRested = "3399FF";
@@ -14,25 +14,35 @@ local f = CreateFrame("frame")
 f:SetScript("OnEvent", function(self, event, ...) if self[event] then return self[event](self, event, ...) end end)
 local dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("Aanye_XP", {type = "data source", text = " ", icon = "Interface\\AddOns\\Aanye_XP\\level"})
 
--- Onload --
+-- Frame functions --
 
 function f:PLAYER_LOGIN()
-	current_xp,max_xp = UnitXP("player"), UnitXPMax("player"), GetTime()
-
-	self:RegisterEvent("PLAYER_XP_UPDATE")
+	local defaults = {
+		global = {
+			display_format = 0,
+			},
+		char = {
+			track_exp = nil,
+		},
+	}
+--	local defaults2 = { }
+	db = LibStub:GetLibrary("AceDB-3.0"):New("Aanye_XP_DB", defaults, true)
+	current_xp,max_xp = UnitXP("player"), UnitXPMax("player")
+	if db.char.track_exp == nil then
+		if MAX_PLAYER_LEVEL ~= UnitLevel("player") and not IsXPUserDisabled() then
+			db.char.track_exp = 1
+		else
+			db.char.track_exp = 0
+		end
+	end
 
 	self:SetFactionVars()
 
+	self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("UPDATE_FACTION")
 
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self.PLAYER_LOGIN = nil
-	
-	if MAX_PLAYER_LEVEL ~= UnitLevel("player") and not IsXPUserDisabled() then
-		track_exp = 1
-	else
-		track_exp = 0
-	end
 	
 	self:PLAYER_XP_UPDATE()
 	self:UPDATE_FACTION()
@@ -42,34 +52,50 @@ function f:SetFactionVars()
 	rep_faction,_,_,_,current_rep = GetWatchedFactionInfo()
 	rep_faction = rep_faction or "None"
 	start_rep = current_rep
-	 
+end
+
+function f.formatRested(str)
+	if GetXPExhaustion() then
+		return '|cFF'.. rgbRested .. str .. '|r'
+	else
+		return str
+	end
+end
+
+function f.formatStanding(str,standing)
+	return '|cFF' .. rgbRep[standing+1] .. str .. '|r'
 end
 
 function f:SetBrokerText()
 	local dotext
-	if track_exp == 1 then
+	if db.char.track_exp == 1 then
 		dataobj.icon = "Interface\\AddOns\\Aanye_XP\\level"
 		if MAX_PLAYER_LEVEL == UnitLevel("player") then
 			dotext = L["Level"].." "..UnitLevel("player")
 		elseif IsXPUserDisabled() then
 			dotext = "XP Disabled"
-		elseif GetXPExhaustion() then
-			dotext = current_xp .. '/' .. max_xp .. '|cFF'.. rgbRested .. string.format(" (%d%%)", current_xp/max_xp*100) .. '|r'
-		else
-			dotext = current_xp .. '/' .. max_xp .. string.format(" (%d%%)", current_xp/max_xp*100)
+		elseif db.global.display_format == 0 then
+			dotext = current_xp.."/"..max_xp..f.formatRested(string.format(" (%d%%)", current_xp/max_xp*100))
+		elseif db.global.display_format == 1 then
+			dotext = (max_xp-current_xp)..f.formatRested(string.format(" (%d%%)", (max_xp-current_xp)/max_xp*100))
+		elseif db.global.display_format == 2 then
+			dotext = f.formatRested(string.format(" %01.1f%%", current_xp/max_xp*100))
+		elseif db.global.display_format == 3 then
+			dotext = f.formatRested(string.format(" %01.1f%%", (max_xp-current_xp)/max_xp*100))
 		end
 	else
 		dataobj.icon = "Interface\\AddOns\\Aanye_XP\\rep"
 		local name, standing, min, max, value = GetWatchedFactionInfo()
 		if not name then
 			dotext = L["No Faction Selected"]
-		else
-			dotext = (value-min).."/"..(max-min)
-			if start_rep > value then
-				dotext = dotext .. '|cFF' .. rgbRep[standing+1] .. string.format(" (%d%%)", (max-value)/(max-min)*100) .. '|r'
-			else
-				dotext = dotext .. '|cFF' .. rgbRep[standing+1] .. string.format(" (%d%%)", (value-min)/(max-min)*100) .. '|r'
-			end
+		elseif db.global.display_format == 0 then
+			dotext = (value-min).."/"..(max-min) .. f.formatStanding(string.format(" (%d%%)", start_rep > value and (max-value)/(max-min)*100 or (value-min)/(max-min)*100),standing)
+		elseif db.global.display_format == 1 then
+			dotext = (max-value) .. f.formatStanding(string.format(" (%d%%)", start_rep > value and (value-min)/(max-min)*100 or (max-value)/(max-min)*100),standing)
+		elseif db.global.display_format == 2 then
+			dotext = f.formatStanding(string.format(" %01.1f%%", start_rep > value and (max-value)/(max-min)*100 or (value-min)/(max-min)*100),standing)
+		elseif db.global.display_format == 3 then
+			dotext = f.formatStanding(string.format(" %01.1f%%", start_rep > value and (value-min)/(max-min)*100 or (max-value)/(max-min)*100),standing)
 		end
 	end
 	dataobj.text = ' '..dotext..' '
@@ -103,7 +129,9 @@ end
 
 function dataobj.OnClick(self,button)
 	if button == "LeftButton" then
-		track_exp = 1-track_exp
+		db.char.track_exp = (db.char.track_exp+1)%2
+	elseif button == "RightButton" then
+		db.global.display_format = (db.global.display_format+1)%4
 	end
 	f.SetBrokerText()
 	dataobj.SetTooltipContents()
@@ -112,7 +140,7 @@ end
 function dataobj.SetTooltipContents()
 	GameTooltip:ClearLines()
 
-	if track_exp == 1 then
+	if db.char.track_exp == 1 then
 		GameTooltip:AddLine(L["Experience Summary"])
 		GameTooltip:AddLine(" ")
 		if MAX_PLAYER_LEVEL == UnitLevel("player") then
@@ -163,4 +191,5 @@ function dataobj.OnEnter(self)
 	dataobj.SetTooltipContents()
 end
 
+-- Startup Events --
 if IsLoggedIn() then f:PLAYER_LOGIN() else f:RegisterEvent("PLAYER_LOGIN") end
