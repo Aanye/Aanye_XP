@@ -2,11 +2,14 @@
 ## Title: Aanye XP
 ## Notes: Experience & Reputation plugin for any DataBroker display.
 ## Author: Aanye
-## Version: 1.4
+## Version: 2.0
 ## OptionalDeps: Ace3
+
+## SavedVariables: Aanye_XP_DB
 
 libs\LibStub\LibStub.lua
 libs\CallbackHandler-1.0\CallbackHandler-1.0.xml
+libs\AceDB-3.0\AceDB-3.0.xml
 libs\AceEvent-3.0\AceEvent-3.0.xml
 libs\AceLocale-3.0\AceLocale-3.0.xml
 libs\LibDataBroker-1.1\LibDataBroker-1.1.lua
