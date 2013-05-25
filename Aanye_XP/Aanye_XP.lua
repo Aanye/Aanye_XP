@@ -17,16 +17,14 @@ local dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("Aanye_XP"
 -- Frame functions --
 
 function f:PLAYER_LOGIN()
-	local defaults = {
+	db = LibStub:GetLibrary("AceDB-3.0"):New("Aanye_XP_DB", {
 		global = {
 			display_format = 0,
 			},
 		char = {
 			track_exp = nil,
 		},
-	}
---	local defaults2 = { }
-	db = LibStub:GetLibrary("AceDB-3.0"):New("Aanye_XP_DB", defaults, true)
+	}, true)
 	current_xp,max_xp = UnitXP("player"), UnitXPMax("player")
 	if db.char.track_exp == nil then
 		if MAX_PLAYER_LEVEL ~= UnitLevel("player") and not IsXPUserDisabled() then
