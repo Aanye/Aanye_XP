@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 80000
 ## Title: Aanye XP
 ## Notes: Experience & Reputation plugin for any DataBroker display.
 ## Author: Aanye
-## Version: 2.3
+## Version: @project-version@
 ## OptionalDeps: Ace3
 
 ## SavedVariables: Aanye_XP_DB
