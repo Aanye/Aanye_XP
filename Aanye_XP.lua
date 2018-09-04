@@ -38,12 +38,14 @@ function f:PLAYER_LOGIN()
 
 	self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("UPDATE_FACTION")
+	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 
 	self:UnregisterEvent("PLAYER_LOGIN")
 	self.PLAYER_LOGIN = nil
-	
+
 	self:PLAYER_XP_UPDATE()
 	self:UPDATE_FACTION()
+	self:AZERITE_ITEM_EXPERIENCE_CHANGED()
 end
 
 function f:SetFactionVars()
@@ -66,7 +68,25 @@ end
 
 function f:SetBrokerText()
 	local dotext
-	if db.char.track_exp == 1 then
+	local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem()
+	if db.char.track_exp == 2 then
+		if not azeriteItemLocation then
+			db.char.track_exp = 1
+		end
+	end
+	if db.char.track_exp == 2 then
+		dataobj.icon = "Interface\\AddOns\\Aanye_XP\\artifact"
+		local current_az,max_az = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItemLocation)
+		if db.global.display_format == 0 then
+			dotext = current_az.."/"..max_az..string.format(" (%d%%)", current_az/max_az*100)
+		elseif db.global.display_format == 1 then
+			dotext = (max_az-current_az)..string.format(" (%d%%)", (max_az-current_az)/max_az*100)
+		elseif db.global.display_format == 2 then
+			dotext = string.format(" %01.1f%%", current_az/max_az*100)
+		elseif db.global.display_format == 3 then
+			dotext = string.format(" %01.1f%%", (max_az-current_az)/max_az*100)
+		end
+	elseif db.char.track_exp == 1 then
 		dataobj.icon = "Interface\\AddOns\\Aanye_XP\\level"
 		if MAX_PLAYER_LEVEL == UnitLevel("player") then
 			dotext = L["Level"].." "..UnitLevel("player")
@@ -113,6 +133,10 @@ function f:UPDATE_FACTION()
 	self:SetBrokerText()
 end
 
+function f:AZERITE_ITEM_EXPERIENCE_CHANGED()
+	self:SetBrokerText()
+end
+
 -- Local Function --
 
 local function GetTipAnchor(frame)
@@ -127,7 +151,11 @@ end
 
 function dataobj.OnClick(self,button)
 	if button == "LeftButton" then
-		db.char.track_exp = (db.char.track_exp+1)%2
+		if C_AzeriteItem.FindActiveAzeriteItem() then
+			db.char.track_exp = (db.char.track_exp+1)%3
+		else
+			db.char.track_exp = (db.char.track_exp+1)%2
+		end
 	elseif button == "RightButton" then
 		db.global.display_format = (db.global.display_format+1)%4
 	end
@@ -138,7 +166,14 @@ end
 function dataobj.SetTooltipContents()
 	GameTooltip:ClearLines()
 
-	if db.char.track_exp == 1 then
+	if db.char.track_exp == 2 then
+		GameTooltip:AddLine(L["Heart of Azeroth Summary"])
+		GameTooltip:AddLine(" ")
+		local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem()
+		local current_az,max_az = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItemLocation)
+		GameTooltip:AddDoubleLine(L["Current Experience:"], current_az.."/"..max_az, nil,nil,nil, 1,1,1)
+		GameTooltip:AddDoubleLine(L["Remaining to Level:"], max_az-current_az, nil,nil,nil, 1,1,1)
+	elseif db.char.track_exp == 1 then
 		GameTooltip:AddLine(L["Experience Summary"])
 		GameTooltip:AddLine(" ")
 		if MAX_PLAYER_LEVEL == UnitLevel("player") then

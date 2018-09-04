@@ -20,3 +20,5 @@ L["Reputation window and check \34Show as Experience Bar\34."] = true
 L["Standing:"] = true
 L["Current Reputation:"] = true
 L["Remaining to X:"] = function(X) return "Remaining to "..X..":"; end
+-- Tooltip: Heart of Azeroth Mode
+L["Heart of Azeroth Summary"] = true
